@@ -98,3 +98,11 @@ curl http://localhost:3000/events/<run-id>
 - **Persistence Abstraction**: Easy to swap in different storage backends
 
 The system is designed to be production-ready with clear separation of concerns, but implemented in a minimal way for demonstration purposes.
+
+## License
+
+MIT License
+
+## Author
+
+Paul Ngen
