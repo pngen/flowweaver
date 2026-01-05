@@ -15,6 +15,56 @@ Flowweaver is an event-driven workflow engine with DAG scheduling capabilities. 
 - **SSE Streaming**: Real-time event streaming for run progress
 - **Observability**: Structured logging and metrics interface
 
+## Architecture Diagram
+
+<pre>
+┌─────────────────┐    ┌────────────────────┐    ┌─────────────────┐
+│   REST API      │    │   Engine           │    │   Workers       │
+│  (HTTP Server)  │───▶│  (Executor)        │───▶│  (Worker Pool)  │
+│                 │    │                    │    │                 │
+│ - Register WF   │    │ - DAG Scheduler    │    │ - Task Runner   │
+│ - Start Run     │    │ - State Machine    │    │ - Thread Pool   │
+│ - Get Status    │    │ - Retry Logic      │    │                 │
+│ - SSE Stream    │    │ - Idempotency      │    │                 │
+└─────────────────┘    │                    │    └─────────────────┘
+                       │                    │
+                       │  ┌──────────────┐  │
+                       │  │   Events     │  │
+                       │  │  (Event Bus) │  │
+                       │  └──────────────┘  │
+                       │                    │
+                       │  ┌─────────────┐   │
+                       │  │ Persistence │   │
+                       │  │  Store      │   │
+                       │  └─────────────┘   │
+                       │                    │
+                       │  ┌───────────────┐ │
+                       │  │ Observability │ │
+                       │  │  Logger       │ │
+                       │  │  Metrics      │ │
+                       │  └───────────────┘ │
+                       └────────────────────┘
+</pre>
+
+## Component Details
+
+### Core Components
+- **REST API Layer**: HTTP server with routes for workflow registration, run initiation, status queries, and SSE streaming
+- **Engine Layer**: Central orchestrator handling DAG processing, task scheduling, state management, retry logic, and idempotency
+- **Worker Pool**: Thread-based execution environment for running tasks (simulated in this implementation)
+- **Event System**: Publish-subscribe mechanism for real-time run status updates
+- **Persistence Layer**: Abstract interface with in-memory implementation and stubs for Redis/Postgres
+- **Observability**: Structured logging and metrics collection points
+
+### Data Flow
+1. Client registers workflow via REST API
+2. Engine validates and stores workflow definition
+3. Client starts run with optional idempotency key
+4. Engine creates run state and schedules tasks via DAG processing
+5. Tasks are executed through worker pool
+6. Task results update run state and emit events
+7. Clients can query status or stream events in real-time
+
 ## Installation
 
 ```bash
@@ -106,3 +156,4 @@ MIT License
 ## Author
 
 Paul Ngen
+
